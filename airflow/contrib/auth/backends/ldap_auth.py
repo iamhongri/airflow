@@ -24,7 +24,7 @@ from flask import flash
 from wtforms import Form, PasswordField, StringField
 from wtforms.validators import InputRequired
 
-from ldap3 import Server, Connection, Tls, set_config_parameter, LEVEL, SUBTREE
+from ldap3 import Server, Connection, set_config_parameter, LEVEL, SUBTREE
 import ssl
 
 from flask import url_for, redirect
@@ -55,10 +55,6 @@ class LdapException(Exception):
 
 
 def get_ldap_connection(dn=None, password=None):
-    try:
-        cacert = conf.get("ldap", "cacert")
-    except AirflowConfigException:
-        pass
 
     try:
         ignore_malformed_schema = conf.get("ldap", "ignore_malformed_schema")
@@ -68,12 +64,8 @@ def get_ldap_connection(dn=None, password=None):
     if ignore_malformed_schema:
         set_config_parameter('IGNORE_MALFORMED_SCHEMA', ignore_malformed_schema)
 
-    tls_configuration = Tls(validate=ssl.CERT_REQUIRED,
-                            ca_certs_file=cacert)
-
     server = Server(conf.get("ldap", "uri"),
-                    use_ssl=True,
-                    tls=tls_configuration)
+                    use_ssl=False)
 
     conn = Connection(server, native(dn), native(password))
 
